@@ -413,21 +413,40 @@ class Akismet {
     /**
      * @param $url
      * @throws \Exception
-     * @return \GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Message\ResponseInterface|\GuzzleHttp\Ring\Future\FutureInterface|null
      */
     private function getResponseData($url)
     {
-        $client = new Client();
-        $requestOption = $this->getRequestOption();
-        $request = $client->post($url, [$requestOption => $this->toArray()]);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $this->toArray());
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
 
-        // Check if the response contains a X-akismet-debug-help header
-        if($request->getHeader('X-akismet-debug-help'))
-        {
-            throw new \Exception($request->getHeader('X-akismet-debug-help'));
+        $response = curl_exec($ch);
+
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header = substr($response, 0, $header_size);
+        $body = substr($response, $header_size);
+        $preHeaders = explode("\r\n", $header);
+        $headers = [];
+
+        foreach ($preHeaders as $h) {
+            if (!empty($h)) {
+                if (strpos($h, ':') !== false) {
+                    $parts = explode(':', $h);
+                    $headers[trim($parts[0])] = trim($parts[1]);
+                }
+            }
         }
 
-        return $request;
+        // Check if the response contains a X-akismet-debug-help header
+        if(isset($headers['X-akismet-debug-help']))
+        {
+            throw new \Exception(isset($headers['X-akismet-debug-help']));
+        }
+
+        return $body;
     }
 
     /**

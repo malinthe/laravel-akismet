@@ -359,7 +359,7 @@ class Akismet {
             'blog'  => $this->getBlogUrl(),
         ]]);
 
-        return (bool) ($response->getBody() == 'valid');
+        return (bool) ($response == 'valid');
     }
 
     /**
@@ -375,7 +375,7 @@ class Akismet {
                 $this->getApiVersion()
             ));
 
-        return (bool) (trim($response->getBody()) == 'true');
+        return (bool) (trim($response) == 'true');
     }
 
     /**
@@ -391,7 +391,7 @@ class Akismet {
                 $this->getApiVersion()
             ));
 
-        return (bool) (trim($response->getBody()) == 'Thanks for making the web a better place.');
+        return (bool) (trim($response) == 'Thanks for making the web a better place.');
     }
 
     /**
@@ -407,7 +407,7 @@ class Akismet {
                 $this->getApiVersion()
             ));
 
-        return (bool) (trim($response->getBody()) == 'Thanks for making the web a better place.');
+        return (bool) (trim($response) == 'Thanks for making the web a better place.');
     }
 
     /**
